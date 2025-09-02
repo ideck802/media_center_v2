@@ -1,0 +1,5 @@
+windows 10:
+  taskbar resize offset = 30
+  titlebar resize offset = 25
+  taskbar position offset = 0
+  titlebar position offset = 50

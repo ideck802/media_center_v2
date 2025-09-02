@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<title>Media Center Deluxe</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="css/index.css">
+<!--<script src="https://kit.fontawesome.com/1fe06c8338.js" crossorigin="anonymous"></script>-->
+<link rel="stylesheet" href="fontawesome-6.5.1/css/all.css">
+
+<body>
+  <div class="tabs" id="tabs">
+    <button class="tab-btn active" id="browse_btn" onclick="guy.emit('change_tab', 'browse')">Browse Media</button>
+    <button class="tab-btn" id="playing_btn" onclick="guy.emit('change_tab', 'playing')">Now Playing</button>
+    <button class="tab-btn" id="radio_btn" onclick="guy.emit('change_tab', 'radio')">Radio</button>
+    <button class="tab-btn" id="games_btn" onclick="guy.emit('change_tab', 'games')">Game Launcher</button>
+    <button class="tab-btn" id="settings_btn" onclick="guy.emit('change_tab', 'settings')">Settings</button>
+  </div>
+  <div class="tab-view" id="tabView">
+    <div class="tab-cont browse-cont active" id="browse_cont">
+      <div class="browse-cats" id="browse_cats">
+        <button class="browse-cat browse-music active" id="browse-music"
+          onclick="guy.emit('change_browse', 'music')">Music</button>
+        <button class="browse-cat browse-movie" id="browse-movie"
+          onclick="guy.emit('change_browse', 'movie')">Movies</button>
+        <button class="browse-cat browse-show" id="browse-show"
+          onclick="guy.emit('change_browse', 'show')">Shows</button>
+        <button class="browse-cat browse-all" id="browse-all" onclick="guy.emit('change_browse', 'all')">All</button>
+      </div>
+      <div class="browse-disp" id="browse_disp">
+        <div class="file-view" id="file_view"></div>
+        <div class="browse-sidebar hide-small" id="browse_sidebar"></div>
+      </div>
+    </div>
+    <div class="tab-cont playing-cont" id="playing_cont">now playing</div>
+    <div class="tab-cont radio-cont" id="radio_cont">radio</div>
+    <div class="tab-cont games-cont" id="games_cont">game launcher</div>
+    <div class="tab-cont settings-cont" id="settings_cont">settings</div>
+  </div>
+  <div class="controls" id="controls">
+    <div class="prog-bar" id="progBar"></div>
+    <button class="main-interactable">
+      <i class="fa-solid fa-backward-step"></i>
+    </button>
+    <button class="main-interactable" id="play_btn" onclick="eel.pause()" fwd-intrct="eel.pause()">
+      <i class="fa-solid fa-play"></i>
+    </button>
+    <button class="main-interactable">
+      <i class="fa-solid fa-forward-step"></i>
+    </button>
+    <button class="main-interactable">
+      <i class="fa-solid fa-stop"></i>
+    </button>
+    <button onclick="self.toggle_gui()" id="resize_btn">
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+  </div>
+  <script type="text/javascript" src="/js/index.js"></script>
+  <script type="text/javascript" src="/js/events.js"></script>
+  <script type="text/javascript" src="/js/controls.js"></script>
+  <script type="text/javascript" src="/js/navigation.js"></script>
+  <script src="guy.js"></script>
+</body>
+
+</html>
