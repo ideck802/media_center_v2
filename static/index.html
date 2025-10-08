@@ -10,11 +10,14 @@
 
 <body>
   <div class="tabs" id="tabs">
-    <button class="tab-btn active" id="browse_btn" onclick="guy.emit('change_tab', 'browse')">Browse Media</button>
-    <button class="tab-btn" id="playing_btn" onclick="guy.emit('change_tab', 'playing')">Now Playing</button>
-    <button class="tab-btn" id="radio_btn" onclick="guy.emit('change_tab', 'radio')">Radio</button>
-    <button class="tab-btn" id="games_btn" onclick="guy.emit('change_tab', 'games')">Game Launcher</button>
-    <button class="tab-btn" id="settings_btn" onclick="guy.emit('change_tab', 'settings')">Settings</button>
+    <div class="tab-btns">
+      <button class="tab-btn active" id="browse_btn" onclick="guy.emit('change_tab', 'browse')">Browse Media</button>
+      <button class="tab-btn" id="playing_btn" onclick="guy.emit('change_tab', 'playing')">Now Playing</button>
+      <button class="tab-btn" id="radio_btn" onclick="guy.emit('change_tab', 'radio')">Radio</button>
+      <button class="tab-btn" id="games_btn" onclick="guy.emit('change_tab', 'games')">Game Launcher</button>
+      <button class="tab-btn" id="settings_btn" onclick="guy.emit('change_tab', 'settings')">Settings</button>
+    </div>
+    <div class="playing-notif" id="playing_notif"></div>
   </div>
   <div class="tab-view" id="tabView">
     <div class="tab-cont browse-cont active" id="browse_cont">
@@ -28,7 +31,10 @@
         <button class="browse-cat browse-all" id="browse-all" onclick="guy.emit('change_browse', 'all')">All</button>
       </div>
       <div class="browse-disp" id="browse_disp">
-        <div class="file-view" id="file_view"></div>
+        <div class="view">
+          <div class="path-bar" id="path_bar"></div>
+          <div class="file-view" id="file_view"></div>
+        </div>
         <div class="browse-sidebar hide-small" id="browse_sidebar"></div>
       </div>
     </div>
@@ -37,28 +43,31 @@
     <div class="tab-cont games-cont" id="games_cont">game launcher</div>
     <div class="tab-cont settings-cont" id="settings_cont">settings</div>
   </div>
-  <div class="controls" id="controls">
+  <div class="controls unfocused" id="controls">
     <div class="prog-bar" id="progBar"></div>
-    <button class="main-interactable">
-      <i class="fa-solid fa-backward-step"></i>
-    </button>
-    <button class="main-interactable" id="play_btn" onclick="eel.pause()" fwd-intrct="eel.pause()">
-      <i class="fa-solid fa-play"></i>
-    </button>
-    <button class="main-interactable">
-      <i class="fa-solid fa-forward-step"></i>
-    </button>
-    <button class="main-interactable">
-      <i class="fa-solid fa-stop"></i>
-    </button>
-    <button onclick="self.toggle_gui()" id="resize_btn">
-      <i class="fa-solid fa-chevron-down"></i>
-    </button>
+    <div class="btns">
+      <button class="ctrl-btn" onclick="self.ctl_player('prev')">
+        <i class="fa-solid fa-backward-step"></i>
+      </button>
+      <button class="ctrl-btn" id="play_btn" onclick="self.ctl_player('pause')">
+        <i class="fa-solid fa-play"></i>
+      </button>
+      <button class="ctrl-btn" onclick="self.ctl_player('next')">
+        <i class="fa-solid fa-forward-step"></i>
+      </button>
+      <button class="ctrl-btn" onclick="self.ctl_player('stop')">
+        <i class="fa-solid fa-stop"></i>
+      </button>
+      <button onclick="self.toggle_gui()" class="ctrl-btn" id="resize_btn">
+        <i class="fa-solid fa-chevron-down"></i>
+      </button>
+    </div>
   </div>
   <script type="text/javascript" src="/js/index.js"></script>
   <script type="text/javascript" src="/js/events.js"></script>
   <script type="text/javascript" src="/js/controls.js"></script>
   <script type="text/javascript" src="/js/navigation.js"></script>
+  <script type="text/javascript" src="/js/playlist.js"></script>
   <script src="guy.js"></script>
 </body>
 

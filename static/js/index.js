@@ -3,6 +3,8 @@
 const tabBtns = document.querySelectorAll(".tab-btn");
 const tabCont = document.querySelectorAll(".tab-cont");
 const shrinkArrow = document.querySelector("#resize_btn");
+const playpauseBtn = document.querySelector("#play_btn");
+const progBar = document.querySelector("#progBar");
 
 let settings = '';
 
@@ -49,9 +51,28 @@ function changeTab(tab) {
   // if switching to browse tab, rerender current sub-tab
   if (tab === 'browse') {
     guy.emit('change_browse', 'current');
+  } else if (tab === 'playing') {
+    renderPlaylist();
   }
 }
 
 function changeChevron(direction) {
   shrinkArrow.innerHTML = "<i class='fa-solid fa-chevron-" + direction + "'></i>";
+}
+
+function changePlayPause(state) {
+  if (state === 'play') {
+    playpauseBtn.innerHTML = "<i class='fa-solid fa-pause'></i>";
+  } else if (state === 'pause') {
+    playpauseBtn.innerHTML = "<i class='fa-solid fa-play'></i>";
+  }
+}
+
+function renderProgBar(len, pos, time) {
+  progBar.innerHTML = '';
+  let marker = `<p class='media-time'>
+  ` + time + `</p><div class='marker-cont'>
+  <div class='marker' style='width: ` + pos + `%;'>.</div>
+  </div><p class='media-len'>` + len + '</p>';
+  progBar.innerHTML = marker;
 }

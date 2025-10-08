@@ -1,4 +1,3 @@
-import vlc
 import time
 from guy import Guy, http
 from sys import platform
@@ -8,6 +7,9 @@ import pywinctl as pwc
 import pymonctl as pmon
 import asyncio
 import json
+import media
+import datetime
+import vlc
 
 def open_chrome(url):
     if platform == 'win32':
@@ -42,6 +44,8 @@ class index(Guy):
         global gui_window
         is_hidden = False
         print('test')
+        media.set_app_instance(self)
+        self.main_loop = self.get_running_async_loop()
         # get handle of the chrome window running the gui
         time.sleep(1)
         gui_window = pwc.getWindowsWithTitle('Media Center Deluxe')[0]
@@ -56,21 +60,30 @@ class index(Guy):
         # initialize js and pass it the settings
         await self.js.init(self.settings)
 
-
     # get the current running async loop, or None if there isn't one
     def get_running_async_loop(self):
         try:
             loop = asyncio.get_running_loop()
             return loop
         except RuntimeError:  # 'RuntimeError: There is no current event loop...'
-            loop = None
+            return None
 
     # bring the chrome gui window to the front
     def bring_gui_front(self):
         global gui_window
         global is_hidden
+        print(is_hidden)
         if (not is_hidden):
             gui_window.raiseWindow()
+
+    def bring_vid_front(self):
+        print('bring vid front')
+        #if (media.playing == 'video'):
+        #    vid_window = self.find_vlc_vid_window()
+        #    if (vid_window != None):
+        #        vid_window.raiseWindow()
+        global gui_window
+        gui_window.lowerWindow()
 
     # return whether the gui is in shrunk mode or not, for use in js
     def get_shrunk_status(self):
@@ -115,7 +128,29 @@ class index(Guy):
             # TODO add padding around for title bar
             gui_window.rect = monitor.rect
         self.bring_gui_front()
+        media.btn_input()
         self.get_running_async_loop().create_task(self.emit('change_chevron', 'down'))
+
+    def find_vlc_vid_window(self):
+        vlc_window = None
+        while vlc_window == None:
+            try:
+                vlc_window = pwc.getWindowsWithTitle('vlc', condition=pwc.Re.CONTAINS, flags=pwc.Re.IGNORECASE)[0]
+            except:
+                time.sleep(1)
+        return vlc_window
+
+    def move_vlc_window(self):
+        global monitor
+        vid_window = self.find_vlc_vid_window()
+        if (vid_window != None):
+            vid_window.restore()
+            print('moving vlc window')
+            if (platform == 'win32'):
+                vid_window.rect = monitor.workarea
+            elif (platform == 'linux'):
+                # TODO add padding around for title bar
+                vid_window.rect = monitor.rect
 
     # load settings from ini file
     def load_settings(self):
@@ -144,11 +179,37 @@ class index(Guy):
             else:
                 file_item = {
                     'name': entry.name,
-                    'type': 'file',
+                    'type': os.path.splitext(entry.name)[1][1:],  # get file extension without dot
                     'path': entry.path
                 }
                 files.append(file_item)
         return folders + files
+    
+    async def handle_media(self, path, action):
+        media.handle_media(path, action)
+        time.sleep(0.5) # wait a moment for vlc to start playing
+        await self.render_playing_notif()
+
+    async def ctl_player(self, action):
+        await self.emit('change_playpause', media.ctl_player(action))
+    
+    async def renderProgBar(self):
+        len = str(datetime.timedelta(milliseconds=media.media_player.get_length()))[:-7]
+        pos = round(media.media_player.get_position() * 100, 3)
+        time_at = str(datetime.timedelta(milliseconds=media.media_player.get_time()))[:-7]
+        await self.emit('render_prog', len, pos, time_at)
+        await asyncio.sleep(0.5) # throttle updates to twice a second
+
+    async def render_playing_notif(self):
+        curr_media = self.get_curr_media()
+        name = os.path.splitext(curr_media.get_meta(vlc.Meta.Title))[0]
+        await self.emit('render_playing_notif', name)
+
+    def get_playlist(self):
+        return media.get_playlist()
+        
+    def get_curr_media(self):
+        return media.get_curr_media()
 
 
 open_chrome('http://127.0.0.1:9090')
