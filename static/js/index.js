@@ -1,5 +1,6 @@
 /* eslint-disable quotes */
 
+const head = document.querySelector("head");
 const tabBtns = document.querySelectorAll(".tab-btn");
 const tabCont = document.querySelectorAll(".tab-cont");
 const shrinkArrow = document.querySelector("#resize_btn");
@@ -12,6 +13,7 @@ function init(newSettings) {
   settings = newSettings;
 
   initEvents();
+  applyTheme();
   if (settings.fileDisp === 'grid') {
     document.querySelector("#browse_sidebar").classList.add('hide-medium');
     document.querySelector("#file_view").classList.add('grid');
@@ -20,6 +22,10 @@ function init(newSettings) {
   }
 
   guy.emit('change_browse', 'music');
+}
+
+function applyTheme() {
+  head.innerHTML += `<link rel="stylesheet" href="css/` + settings.theme + `.css">`;
 }
 
 function changeTab(tab) {

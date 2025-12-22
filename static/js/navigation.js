@@ -3,7 +3,7 @@
 const pathBar = document.querySelector("#path_bar");
 const fileView = document.querySelector("#file_view");
 const browseCats = document.querySelectorAll(".browse-cat");
-const browseSidebar = document.querySelector("#browse_sidebar");
+const browseSidebar = document.querySelector("#sidebar_extra");
 
 let currFolderCont = [];
 let currPath = '';
@@ -89,7 +89,8 @@ async function drawBrowse(path) {
 
   pathBar.innerHTML = `<button onclick="guy.emit('go_back')">
       <i class="fa-solid fa-arrow-left"></i>
-    </button> ${path}`;
+    </button>
+    <p>${path}</p>`;
 
   fileView.innerHTML = '';
   let html = '';

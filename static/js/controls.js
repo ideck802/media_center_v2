@@ -58,6 +58,7 @@ document.addEventListener("keydown", function(event) {
 });
 
 const controls = document.querySelector('#controls');
+const tabsContainer = document.querySelector('#tabs');
 
 let highlightedAction = -1;
 let activeArea = 'browse';
@@ -122,6 +123,7 @@ function focusToggle(jump = false) {
   if (activeArea !== 'controls' && !jump) {
     activeArea = 'controls';
     controls.classList.remove('unfocused');
+    tabsContainer.classList.add('unfocused');
   } else {
     const tabs = Array.from(tabBtns).map(btn => btn.id.replace("_btn", ""));
     let activeIdx = tabs.findIndex(tabName =>
@@ -129,5 +131,6 @@ function focusToggle(jump = false) {
     );
     activeArea = tabs[activeIdx];
     controls.classList.add('unfocused');
+    tabsContainer.classList.remove('unfocused');
   }
 }

@@ -22,20 +22,29 @@
   <div class="tab-view" id="tabView">
     <div class="tab-cont browse-cont active" id="browse_cont">
       <div class="browse-cats" id="browse_cats">
-        <button class="browse-cat browse-music active" id="browse-music"
-          onclick="guy.emit('change_browse', 'music')">Music</button>
-        <button class="browse-cat browse-movie" id="browse-movie"
-          onclick="guy.emit('change_browse', 'movie')">Movies</button>
-        <button class="browse-cat browse-show" id="browse-show"
-          onclick="guy.emit('change_browse', 'show')">Shows</button>
-        <button class="browse-cat browse-all" id="browse-all" onclick="guy.emit('change_browse', 'all')">All</button>
+        <button class="browse-cat browse-music active" id="browse-music" onclick="guy.emit('change_browse', 'music')">
+          <p>Music</p>
+        </button>
+        <button class="browse-cat browse-movie" id="browse-movie" onclick="guy.emit('change_browse', 'movie')">
+          <p>Movies</p>
+        </button>
+        <button class="browse-cat browse-show" id="browse-show" onclick="guy.emit('change_browse', 'show')">
+          <p>Shows</p>
+        </button>
+        <button class="browse-cat browse-all" id="browse-all" onclick="guy.emit('change_browse', 'all')">
+          <p>All</p>
+        </button>
       </div>
       <div class="browse-disp" id="browse_disp">
         <div class="view">
-          <div class="path-bar" id="path_bar"></div>
-          <div class="file-view" id="file_view"></div>
+          <div class="view-extra">
+            <div class="path-bar" id="path_bar"></div>
+            <div class="file-view" id="file_view"></div>
+          </div>
         </div>
-        <div class="browse-sidebar hide-small" id="browse_sidebar"></div>
+        <div class="browse-sidebar hide-small" id="browse_sidebar">
+          <div class="sidebar-extra" id="sidebar_extra"></div>
+        </div>
       </div>
     </div>
     <div class="tab-cont playing-cont" id="playing_cont">now playing</div>

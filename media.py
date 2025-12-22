@@ -28,8 +28,12 @@ media_list_player.set_media_player(media_player)
 def toggle_taskbar(act):
     if (act == 'hide'):
         windll.user32.ShowWindow(windll.user32.FindWindowA(b'Shell_TrayWnd', None), 0)
+        # disable turning the screen off
+        windll.kernel32.SetThreadExecutionState(0x80000002)
     elif (act == 'show'):
         windll.user32.ShowWindow(windll.user32.FindWindowA(b'Shell_TrayWnd', None), 9)
+        # disable turning the screen off
+        windll.kernel32.SetThreadExecutionState(0x80000000)
 
 def btn_input():
     global pos_same_count
@@ -82,9 +86,15 @@ def renderProgPass(event):
 def render_playing_notif(event):
     asyncio.run_coroutine_threadsafe(app_instance.render_playing_notif(), app_instance.main_loop)
 
+def end_playlist(event):
+    app_instance.expand_gui()
+    app_instance.bring_gui_front()
+
 vlc_event_manager = media_player.event_manager()
 vlc_event_manager.event_attach(vlc.EventType.MediaPlayerTimeChanged, renderProgPass)
+vlc_event_manager.event_attach(vlc.EventType.MediaPlayerMediaChanged, render_playing_notif)
 vlc_event_manager.event_attach(vlc.EventType.MediaPlayerEndReached, render_playing_notif)
+vlc_event_manager.event_attach(vlc.EventType.MediaPlayerEndReached, end_playlist)
 
 def clear_playlist():
     global playlist
