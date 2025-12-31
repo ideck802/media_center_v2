@@ -753,13 +753,23 @@ body {
 				.sidebar-extra {
 					position: relative;
 
-					height: 200px;
+					height: 100%;
+
+					padding: 5px;
 
 					overflow: hidden;
 
 					animation: textShadow 1.6s infinite;
 
 					background: radial-gradient( $crt-gray 50%, $black 100% );
+
+					.picture {
+						height: 100%;
+
+						img {
+							height: 100%;
+						}
+					}
 				}
 			}
 		}

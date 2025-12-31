@@ -7,9 +7,11 @@ import pywinctl as pwc
 import pymonctl as pmon
 import asyncio
 import json
-import media
 import datetime
 import vlc
+# import local files
+import media
+import metadata
 
 def open_chrome(url):
     if platform == 'win32':
@@ -45,6 +47,7 @@ class index(Guy):
         is_hidden = False
         print('test')
         media.set_app_instance(self)
+        metadata.set_app_instance(self)
         self.main_loop = self.get_running_async_loop()
         # get handle of the chrome window running the gui
         time.sleep(1)
@@ -210,6 +213,9 @@ class index(Guy):
         
     def get_curr_media(self):
         return media.get_curr_media()
+    
+    def dwnld_metadata(self, media_type, path):
+        metadata.dwnload_metadata(media_type, path)
 
 
 open_chrome('http://127.0.0.1:9090')

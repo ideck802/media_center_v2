@@ -17,8 +17,10 @@ def set_app_instance(app):
     global app_instance
     app_instance = app
 
+vlc_options = ['--sout-mux-caching=4000']
+
 # initialize vlc backend and establish playlist variable
-vlc_inst = vlc.Instance()
+vlc_inst = vlc.Instance(vlc_options)
 media_player = vlc_inst.media_player_new()
 media_list_player = vlc_inst.media_list_player_new()
 playlist = vlc_inst.media_list_new()

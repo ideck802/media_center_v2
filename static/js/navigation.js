@@ -3,11 +3,12 @@
 const pathBar = document.querySelector("#path_bar");
 const fileView = document.querySelector("#file_view");
 const browseCats = document.querySelectorAll(".browse-cat");
-const browseSidebar = document.querySelector("#sidebar_extra");
+const browseSidebar = document.querySelector("#browse_sidebar");
 
 let currFolderCont = [];
 let currPath = '';
 let lastPaths = {'music': '', 'movie': '', 'show': '', 'all': ''};
+let currTab = 'music';
 
 function changeBrowseType(cat) {
   const tabs = Array.from(browseCats).map(btn => btn.id.replace("browse-", ""));
@@ -43,14 +44,32 @@ function changeBrowseType(cat) {
       drawBrowse(settings[cat + "Path"]);
     }
   }
+
+  currTab = cat;
 }
 
-function renderSidebar(fileIndex) {
+function urlExists(url) {
+  var http = new XMLHttpRequest();
+  http.open('HEAD', url, false);
+  http.send();
+  return http.status != 404;
+}
+
+async function renderSidebar(fileIndex) {
+
   browseSidebar.innerHTML = '';
 
   const file = currFolderCont[fileIndex];
 
-  let html = '';
+  let metadata = null;
+  if (urlExists(`${window.location.origin}/cached_metadata/${file.name}_img.jpg`) &&
+    ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'm4v'].includes(file.type)) {
+    const response = await fetch(`./cached_metadata/${file.name}_txt.txt`);
+    metadata = await response.json();
+    console.log(metadata);
+  }
+
+  let html = '<div class="sidebar-extra" id="sidebar_extra">';
 
   if (file.type == 'folder') {
     html += `<div class="picture"><i class="fa-solid fa-folder"></i></div>`;
@@ -58,11 +77,25 @@ function renderSidebar(fileIndex) {
     html += `<div class="picture"><i class="fa-solid fa-file-audio"></i></div>`;
   } else if (['jpg', 'png', 'jpeg', 'gif'].includes(file.type)) {
     html += `<div class="picture"><i class="fa-solid fa-file-image"></i></div>`;
+  } else if (['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'm4v'].includes(file.type)) {
+    if (metadata !== null) {
+      html += `<div class="picture">
+        <img src="./cached_metadata/${file.name}_img.jpg">
+      </div>`;
+    } else {
+      html += `<div class="picture"><i class="fa-solid fa-file-video"></i></div>`;
+    }
   } else {
     html += `<div class="picture"><i class="fa-solid fa-file"></i></div>`;
   }
 
-  html += `<p>${file.name}</p>`;
+  if (metadata == null) {
+    html += `</div>
+    <p>${file.name}</p>`;
+  } else {
+    html += `</div>
+    <p>${metadata.title}</p>`;
+  }
 
   browseSidebar.innerHTML = html;
 }
@@ -102,6 +135,7 @@ async function drawBrowse(path) {
         <button onclick="guy.emit('draw_browse', '${item.path.replace('\\', '/')}')">Open</button>
         <button onclick="self.handle_media('${item.path.replace('\\', '/')}','play-folder')">Play</button>
         <button onclick="self.handle_media('${item.path.replace('\\', '/')}','enqueue-folder')">Enqueue</button>
+        <button onclick="self.dwnld_metadata('${currTab}','${item.path.replace('\\', '/')}')">Get Metadata</button>
       </div>`;
     } else {
       html += `<div class="dir-item" onclick="guy.emit('render_sidebar', ${currFolderCont.length - 1})">
