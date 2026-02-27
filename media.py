@@ -13,6 +13,8 @@ app_instance = None
 
 playing = 'nothing'
 
+content = None
+
 def set_app_instance(app):
     global app_instance
     app_instance = app
@@ -86,17 +88,23 @@ def renderProgPass(event):
     asyncio.run_coroutine_threadsafe(app_instance.renderProgBar(), app_instance.main_loop)
 
 def render_playing_notif(event):
+    global content
+    content = get_curr_media().get_mrl().replace('file:///', '').replace('%20', ' ')
     asyncio.run_coroutine_threadsafe(app_instance.render_playing_notif(), app_instance.main_loop)
 
-def end_playlist(event):
+def end_file(event):
     app_instance.expand_gui()
     app_instance.bring_gui_front()
+    set_watched()
+
+def set_watched():
+    print('SETTING WATCHED')
+    asyncio.run_coroutine_threadsafe(app_instance.set_watched(content), app_instance.main_loop)
 
 vlc_event_manager = media_player.event_manager()
 vlc_event_manager.event_attach(vlc.EventType.MediaPlayerTimeChanged, renderProgPass)
 vlc_event_manager.event_attach(vlc.EventType.MediaPlayerMediaChanged, render_playing_notif)
-vlc_event_manager.event_attach(vlc.EventType.MediaPlayerEndReached, render_playing_notif)
-vlc_event_manager.event_attach(vlc.EventType.MediaPlayerEndReached, end_playlist)
+vlc_event_manager.event_attach(vlc.EventType.MediaPlayerEndReached, end_file)
 
 def clear_playlist():
     global playlist

@@ -21,10 +21,12 @@ $gray-6: #d6d8db;
 $gray-7: #bec3c7;
 $gray-8: #f0f4f8;
 $green: #13df00;
+$olive-green: #96b146;
 $orange: #ff8400;
 $red: #f00;
 $red-off: #7a0000;
 $teal: #006cd8;
+$dark-green: #006e05;
 $translucent-1: #00000090;
 $translucent-2: #00000063;
 $translucent-3: #00000080;
@@ -378,6 +380,12 @@ $txtShdwRed2: rgba( 255, 0, 80, 0.2 );
 	}
 }
 
+@font-face {
+	font-family: 'seven-segment';
+	/* stylelint-disable-next-line function-url-quotes */
+	src: url( 'fonts/Seven Segment.ttf' ) format( 'truetype' );
+}
+
 body {
 	background: $black;
 }
@@ -414,12 +422,15 @@ body {
 		justify-content: start;
 		gap: 10px;
 
-		width: 100%;
+		width: calc( 100% - 150px );
 
-		padding-top: 10px;
+		margin-top: 10px;
+		margin-right: 150px;
 		padding-left: 10px;
 
-		background: $beige-3;
+		border-bottom: 20px solid $orange;
+
+		background: $teal;
 
 		.tab-btn {
 			display: flex;
@@ -477,6 +488,26 @@ body {
 
 			box-shadow: 0 0 6px rgba( 255, 43, 43, 0.75 ), inset 0 0 2px rgba( 255, 255, 255, 0.2 );
 		}
+
+		&:after {
+			content: '';
+
+			position: absolute;
+
+			top: 30px;
+			right: -50px;
+
+			width: 100px;
+			height: 100vh;
+
+			border-top: 20px solid $orange;
+			border-right: 20px solid $orange;
+			border-radius: 0 50px 0 0;
+
+			background: $beige-3;
+
+			box-shadow: 15px -15px 0 15px $teal;
+		}
 	}
 
 	&.unfocused {
@@ -489,6 +520,8 @@ body {
 }
 
 .tab-view {
+	height: calc( 100% - 130px );
+
 	padding-top: 20px;
 
 	/* border-radius: 3.2vw 3.2vw 0 0;
@@ -508,6 +541,8 @@ body {
 				justify-content: center;
 
 				width: 80px;
+
+				padding: 0;
 
 				border: 0;
 
@@ -546,8 +581,13 @@ body {
 				}
 
 				p {
+					width: 100%;
+
 					margin: 0;
 
+					background: $dark-green;
+
+					color: $beige-3;
 					text-align: center;
 
 					white-space: nowrap;
@@ -570,10 +610,12 @@ body {
 		}
 
 		.browse-disp {
+			display: flex;
+
+			flex-direction: row;
+
 			margin-right: 20px;
 			margin-left: 20px;
-
-			background: $beige-3;
 
 			color: $green;
 
@@ -699,14 +741,12 @@ body {
 			}
 
 			.browse-sidebar {
-				height: calc( 200px + 40px );
+				display: flex;
 
-				margin-left: 10px;
+				flex-direction: column;
 
-				border-top: 30px solid $beige-3-shdw3;
-				border-right: 40px solid $beige-3-shdw2;
-				border-bottom: 15px solid $beige-3-shdw;
-				border-left: 15px solid $beige-3-shdw2;
+				width: 25%;
+				height: 100%;
 
 				.sidebar-extra:before {
 					content: ' ';
@@ -753,13 +793,21 @@ body {
 				.sidebar-extra {
 					position: relative;
 
-					height: 100%;
+					width: calc( 100% - 75px );
+					height: 45%;
+
+					margin-left: 10px;
 
 					padding: 5px;
 
 					overflow: hidden;
 
 					animation: textShadow 1.6s infinite;
+
+					border-top: 30px solid $beige-3-shdw3;
+					border-right: 40px solid $beige-3-shdw2;
+					border-bottom: 15px solid $beige-3-shdw;
+					border-left: 15px solid $beige-3-shdw2;
 
 					background: radial-gradient( $crt-gray 50%, $black 100% );
 
@@ -769,6 +817,158 @@ body {
 						img {
 							height: 100%;
 						}
+					}
+				}
+
+				.name {
+					display: flex;
+
+					flex-direction: column;
+
+					p {
+						position: relative;
+
+						width: calc( 100% - 20px );
+
+						padding: 5px;
+
+						border: 5px solid $gray-5;
+
+						background: $olive-green;
+
+						color: $translucent-1;
+
+						font-family: 'seven-segment', monospace;
+						font-size: 1.5em;
+
+						text-align: center;
+
+						&:before {
+							content: ' ';
+
+							display: block;
+
+							position: absolute;
+
+							z-index: 2;
+							top: 0;
+							right: 0;
+							bottom: 0;
+							left: 0;
+
+							/* value-list-comma-newline-after */
+							background: linear-gradient( rgba( 18, 16, 16, 0 ) 50%, rgba( 0, 0, 0, 0.2 ) 50% ),
+								linear-gradient( 90deg, rgba( 255, 0, 0, 0.06 ), rgba( 0, 255, 0, 0.02 ), rgba( 0, 0, 255, 0.06 ) );
+							background-size: 100% 3px, 3px 100%;
+
+							pointer-events: none;
+						}
+
+						&:after {
+							content: ' ';
+
+							display: block;
+							position: absolute;
+							z-index: 3;
+
+							top: 0;
+							left: 0;
+
+							width: 100%;
+							height: 100%;
+
+							background: linear-gradient( -35deg, rgba( 255, 255, 255, 0 ) 0%,
+							rgba( 255, 255, 255, 0 ) 15%,
+							rgba( 255, 255, 255, 0.2 ) 16%,
+							rgba( 255, 255, 255, 0.2 ) 25%,
+							rgba( 255, 255, 255, 0 ) 26%,
+							rgba( 255, 255, 255, 0 ) 35%,
+							rgba( 255, 255, 255, 0.2 ) 36%,
+							rgba( 255, 255, 255, 0.2 ) 45%,
+							rgba( 255, 255, 255, 0 ) 46%,
+							rgba( 255, 255, 255, 0 ) 100% );
+
+							pointer-events: none;
+						}
+					}
+				}
+
+				.desc {
+					display: flex;
+
+					position: relative;
+
+					width: calc( 100% - 75px );
+					height: 45%;
+
+					margin-left: 10px;
+
+					padding: 5px;
+
+					overflow: hidden;
+
+					animation: textShadow 1.6s infinite;
+
+					border-top: 15px solid $beige-3-shdw3;
+					border-right: 40px solid $beige-3-shdw2;
+					border-bottom: 30px solid $beige-3-shdw;
+					border-left: 15px solid $beige-3-shdw2;
+
+					background: radial-gradient( $crt-gray 50%, $black 100% );
+
+					&:before {
+						content: ' ';
+
+						display: block;
+
+						position: absolute;
+
+						z-index: 2;
+						top: 0;
+						right: 0;
+						bottom: 0;
+						left: 0;
+
+						/* value-list-comma-newline-after */
+						background: linear-gradient( rgba( 18, 16, 16, 0 ) 50%, rgba( 0, 0, 0, 0.25 ) 50% ),
+							linear-gradient( 90deg, rgba( 255, 0, 0, 0.06 ), rgba( 0, 255, 0, 0.02 ), rgba( 0, 0, 255, 0.06 ) );
+						background-size: 100% 2px, 3px 100%;
+
+						pointer-events: none;
+					}
+
+					&:after {
+						content: ' ';
+
+						display: block;
+
+						position: absolute;
+
+						z-index: 2;
+						top: 0;
+						right: 0;
+						bottom: 0;
+						left: 0;
+
+						animation: flicker 0.15s infinite;
+
+						opacity: 0;
+						background: rgba( 18, 16, 16, 0.1 );
+
+						pointer-events: none;
+					}
+
+					p {
+						width: 100%;
+						height: 100%;
+
+						margin: 0;
+						padding: 5px;
+
+						overflow-x: hidden;
+						overflow-y: auto;
+
+						color: $white;
 					}
 				}
 			}

@@ -45,12 +45,12 @@ def search_tmdb(media_type, file_name, id = False, num_results = 1):
 
     # make API request
 
-    print(url + str(params))
+    #print(url + str(params))
     response = requests.get(url, params).json()
-    print(response)
 
     correct_movie = None
     print("|" + file_name + "|")
+    print(response)
 
     # if a name, not id, is provided, we are searching and must check
     if (not id):
@@ -109,7 +109,7 @@ def scan_files(path):
     return files
 
 def read_file(file_path):
-    file = open(file_path, 'r')
+    file = open(file_path, 'r', encoding='utf8')
     data = json.loads(file.read())
     file.close()
     return data
@@ -132,10 +132,10 @@ def dwnload_metadata(media_type, path):
 
         # loop through each movie file
         for movie in movies:
-            path_start = './static/cached_metadata/' + movie['name']
+            path_start = './static/cached_metadata/movies/' + movie['name']
             # check if metadata is already cached
-            if (os.path.isfile(path_start + '_txt.txt')):
-                saved_metadata = read_file(path_start + '_txt.txt')
+            if (os.path.isfile(path_start + '_txt.json')):
+                saved_metadata = read_file(path_start + '_txt.json')
                 # get the new metadata from tmdb using id, since it's already cached
                 new_metadata = search_tmdb('movie', saved_metadata['id'], True)
             else:
@@ -149,8 +149,61 @@ def dwnload_metadata(media_type, path):
 
                 # store and write the text metadata to the cache file
                 new_metadata = "{\"title\": \"" + new_metadata['original_title'] + "\",\"date\": \"" + new_metadata['release_date'] + "\",\"id\": \"" + str(new_metadata['id']) + "\",\"desc\": \"" + new_metadata['overview'].replace('"', '\\"').replace('\n', '\\n').replace('\u200b', ' ') + "\"}"
-                write_file(path_start + '_txt.txt', new_metadata)
+                write_file(path_start + '_txt.json', new_metadata)
 
     elif (media_type == 'show'):
         # get the shows in the path
-        shows = app_instance.read_folder(path)
+        for show in app_instance.read_folder(path):
+            if (show['type'] == 'folder'):
+                if (not 'season' in show['name'].lower()):
+
+                    path_start = './static/cached_metadata/shows/' + show['name'] + '/'
+                    # check if metadata is already cached
+                    if (os.path.isfile(path_start + 'txt.json')):
+                        saved_metadata = read_file(path_start + 'txt.json')
+                        # get the new metadata from tmdb using id, since it's already cached
+                        new_metadata = search_tmdb('show', saved_metadata['id'], True)
+                    else:
+                        os.makedirs(path_start)
+                        # get the new metadata from tmdb using file name
+                        new_metadata = search_tmdb('show', show['name'])
+                        if (not new_metadata == None):
+                            new_metadata = search_tmdb('show', str(new_metadata['id']), True)
+
+                    # if metadata exists for the movie, download it to the cache
+                    if (not new_metadata == None):
+                        if (not new_metadata['poster_path'] == None):
+                            img_data = requests.get('https://image.tmdb.org/t/p/w500' + new_metadata['poster_path']).content
+                            write_file(path_start + 'img.jpg', img_data, True)
+
+                        # store and write the text metadata to the cache file
+                        to_write = "{\"title\": \"" + new_metadata['original_name'] + "\",\"date\": \"" + new_metadata['first_air_date'] + "\",\"id\": \"" + str(new_metadata['id']) + "\",\"desc\": \"" + new_metadata['overview'].replace('"', '\\"').replace('\n', '\\n').replace('\u200b', ' ') + "\"}"
+                        write_file(path_start + 'txt.json', to_write)
+
+                        for season in new_metadata['seasons']:
+                            # make sure the folder is made for the season
+                            os.makedirs(path_start + 'season_' + str(season['season_number']), exist_ok=True)
+    
+                            if (not season['poster_path'] == None):
+                                img_data = requests.get('https://image.tmdb.org/t/p/w500' + season['poster_path']).content
+                                write_file(path_start + 'season_' + str(season['season_number']) + '/img.jpg', img_data, True)
+    
+                            # store and write the text metadata to the cache file
+                            to_write = "{\"title\": \"" + season['name'] + "\",\"id\": \"" + str(season['id']) + "\",\"desc\": \"" + season['overview'].replace('"', '\\"').replace('\n', '\\n').replace('\u200b', ' ') + "\"}"
+                            write_file(path_start + 'season_' + str(season['season_number']) + '/txt.json', to_write)
+    
+    
+                            url = 'https://api.themoviedb.org/3/tv/' + str(new_metadata['id']) + '/season/' + str(season['season_number'])
+                            params = {'api_key': tmdb_api_key, 'language': 'en-US'}
+    
+                            response = requests.get(url, params).json()
+                            for episode in response['episodes']:
+                                if (not episode['still_path'] == None):
+                                    img_data = requests.get('https://image.tmdb.org/t/p/w500' + episode['still_path']).content
+                                    write_file(path_start + 'season_' + str(season['season_number']) + '/' + str(episode['episode_number']) + '_img.jpg', img_data, True)
+    
+                                # store and write the text metadata to the cache file
+                                to_write = "{\"title\": \"" + episode['name'] + "\",\"id\": \"" + str(episode['episode_number']) + "\",\"desc\": \"" + season['overview'].replace('"', '\\"').replace('\n', '\\n').replace('\u200b', ' ') + "\"}"
+                                write_file(path_start + 'season_' + str(season['season_number']) + '/' + str(episode['episode_number']) + '_txt.json', to_write)
+
+                        

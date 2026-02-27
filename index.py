@@ -12,6 +12,7 @@ import vlc
 # import local files
 import media
 import metadata
+import watched
 
 def open_chrome(url):
     if platform == 'win32':
@@ -45,9 +46,9 @@ class index(Guy):
         global monitor
         global gui_window
         is_hidden = False
-        print('test')
         media.set_app_instance(self)
         metadata.set_app_instance(self)
+        watched.set_app_instance(self)
         self.main_loop = self.get_running_async_loop()
         # get handle of the chrome window running the gui
         time.sleep(1)
@@ -60,6 +61,7 @@ class index(Guy):
         self.expand_gui()
         #self.shrink_gui()
         self.load_settings()
+        self.load_watched()
         # initialize js and pass it the settings
         await self.js.init(self.settings)
 
@@ -116,7 +118,7 @@ class index(Guy):
             # TODO adjust height and add padding
             gui_window.bottom = monitor.rect[3]
         self.bring_gui_front()
-        self.get_running_async_loop().create_task(self.emit('change_chevron', 'up'))
+        asyncio.run_coroutine_threadsafe(self.emit('change_chevron', 'up'), self.main_loop)
 
     # expand the gui window to full screen
     def expand_gui(self):
@@ -132,7 +134,7 @@ class index(Guy):
             gui_window.rect = monitor.rect
         self.bring_gui_front()
         media.btn_input()
-        self.get_running_async_loop().create_task(self.emit('change_chevron', 'down'))
+        asyncio.run_coroutine_threadsafe(self.emit('change_chevron', 'down'), self.main_loop)
 
     def find_vlc_vid_window(self):
         vlc_window = None
@@ -166,6 +168,27 @@ class index(Guy):
     # save settings to ini file
     def save_settings(self):
         print('need to add')
+
+    def load_watched(self):
+        file = open('./saved_lists/watched.ini', 'r')
+        contents = file.read()
+        file.close()
+        data = json.loads(contents)
+        self.watched_list = data
+
+    def get_watched(self):
+        self.load_watched()
+        return self.watched_list
+    
+    async def set_watched(self, path, watch=True):
+        print('setting watched: ', path)
+        await watched.set_watched(path, watch)
+
+    def save_watched(self):
+        file = open('./saved_lists/watched.ini', 'w')
+        contents = json.dumps(self.watched_list)
+        file.write(contents)
+        file.close()
 
     # read the contents of a folder and return them as a list, with folders first
     def read_folder(self, path):

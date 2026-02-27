@@ -49,22 +49,65 @@ function changeBrowseType(cat) {
 }
 
 function urlExists(url) {
+  console.log('testing: ' + url);
   var http = new XMLHttpRequest();
   http.open('HEAD', url, false);
   http.send();
   return http.status != 404;
 }
 
+function getParentFolder(path, ancestor = 1) {
+  const parts = path.replace("\\", "/").split("/");
+  return parts[parts.length - (ancestor + 1)];
+}
+
 async function renderSidebar(fileIndex) {
 
-  browseSidebar.innerHTML = '';
+  browseSidebar.innerHTML = `<div class="sidebar-extra" id="sidebar_extra"></div>
+    <div class="name">
+      <p>Loading...</p>
+    </div>
+    <div class="desc">
+      <p></p>
+    </div>`;
 
   const file = currFolderCont[fileIndex];
+  let url = ['', ''];
+
+  // check which type of media metadata we have
+  if (urlExists(`${window.location.origin}/cached_metadata/movies/${file.name}_txt.json`)) {
+    // either a movie file
+    url = [`./cached_metadata/movies/${file.name}_`, 'movie'];
+
+  } else if (urlExists(`${window.location.origin}/cached_metadata/shows/${file.name}/txt.json`)) {
+    // a show folder
+    url = [`./cached_metadata/shows/${file.name}/`, 'show'];
+
+  } else if (file.type == 'folder') {
+    // get parent folder name and extract season number
+    const parent = getParentFolder(file.path);
+    const seasonNum = parseInt(file.path.replace(/\D/g, "")).toString();
+    if (urlExists(`${window.location.origin}/cached_metadata/shows/${parent}/season_${seasonNum}/txt.json`)) {
+      // a season folder
+      url = [`./cached_metadata/shows/${parent}/season_${seasonNum}/`, 'season'];
+    }
+
+  } else if (file.type != 'folder') {
+    const parent = getParentFolder(file.path, 2);
+    const seasonNum = parseInt(getParentFolder(file.path).replace(/\D/g, "")).toString();
+    const episodeNum = parseInt(file.name.replace(/.*?e(\d+).*/i, "$1")).toString();
+    // eslint-disable-next-line max-len
+    if (urlExists(`${window.location.origin}/cached_metadata/shows/${parent}/season_${seasonNum}/${episodeNum}_txt.json`)) {
+      // or an episode file
+      url = [`./cached_metadata/shows/${parent}/season_${seasonNum}/${episodeNum}_`, 'episode'];
+    }
+  }
+
+  console.log(url);
 
   let metadata = null;
-  if (urlExists(`${window.location.origin}/cached_metadata/${file.name}_img.jpg`) &&
-    ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'm4v'].includes(file.type)) {
-    const response = await fetch(`./cached_metadata/${file.name}_txt.txt`);
+  if (url[0] !== '') {
+    const response = await fetch(`${url[0]}txt.json`);
     metadata = await response.json();
     console.log(metadata);
   }
@@ -72,7 +115,13 @@ async function renderSidebar(fileIndex) {
   let html = '<div class="sidebar-extra" id="sidebar_extra">';
 
   if (file.type == 'folder') {
-    html += `<div class="picture"><i class="fa-solid fa-folder"></i></div>`;
+    if ((url[1] === 'show' || url[1] === 'season') && metadata !== null) {
+      html += `<div class="picture">
+        <img src="${url[0]}img.jpg">
+      </div>`;
+    } else {
+      html += `<div class="picture"><i class="fa-solid fa-folder"></i></div>`;
+    }
   } else if (['mp3', 'wav', 'flac'].includes(file.type)) {
     html += `<div class="picture"><i class="fa-solid fa-file-audio"></i></div>`;
   } else if (['jpg', 'png', 'jpeg', 'gif'].includes(file.type)) {
@@ -80,7 +129,7 @@ async function renderSidebar(fileIndex) {
   } else if (['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'm4v'].includes(file.type)) {
     if (metadata !== null) {
       html += `<div class="picture">
-        <img src="./cached_metadata/${file.name}_img.jpg">
+        <img src="${url[0]}img.jpg">
       </div>`;
     } else {
       html += `<div class="picture"><i class="fa-solid fa-file-video"></i></div>`;
@@ -91,10 +140,20 @@ async function renderSidebar(fileIndex) {
 
   if (metadata == null) {
     html += `</div>
-    <p>${file.name}</p>`;
+    <div class="name">
+      <p>${file.name}</p>
+    </div>
+    <div class="desc">
+      <p></p>
+    </div>`;
   } else {
     html += `</div>
-    <p>${metadata.title}</p>`;
+    <div class="name">
+      <p>${metadata.title}</p>
+    </div>
+    <div class="desc">
+      <p>${metadata.desc}</p>
+    </div>`;
   }
 
   browseSidebar.innerHTML = html;
@@ -119,6 +178,7 @@ async function drawBrowse(path) {
   currPath = path;
   currFolderCont = [];
   const contents = await self.read_folder(path);
+  const watchedList = await self.get_watched();
 
   pathBar.innerHTML = `<button onclick="guy.emit('go_back')">
       <i class="fa-solid fa-arrow-left"></i>
@@ -128,6 +188,42 @@ async function drawBrowse(path) {
   fileView.innerHTML = '';
   let html = '';
   contents.forEach(item => {
+
+    // figure out if the file/folder is on the watched list
+    let watched = false;
+    if (item.name.toLowerCase().includes('season')) {
+      // if its a season
+      const showName = getWatchedName(getParentFolder(item.path));
+      if (showName in watchedList) {
+        if (getWatchedName(item.name, 's') in watchedList[showName]) {
+          watched = watchedList[showName][getWatchedName(item.name, 's')]['watched'];
+        }
+      }
+    } else if (getParentFolder(item.path).toLowerCase().includes('season')) {
+      // if its an episode
+      const showName = getWatchedName(getParentFolder(item.path, 2));
+      const seasonName = getWatchedName(getParentFolder(item.path), 's');
+      if (showName in watchedList) {
+        if (seasonName in watchedList[showName]) {
+          if (getWatchedName(item.name, 'e') in watchedList[showName][seasonName]) {
+            watched = watchedList[showName][seasonName][getWatchedName(item.name, 'e')];
+          }
+        }
+      }
+    } else if (item.type != 'folder') {
+      // if its a movie file
+      if (getWatchedName(item.name) in watchedList) {
+        watched = watchedList[getWatchedName(item.name)];
+      }
+    } else {
+      // if its the root show folder
+      if (getWatchedName(item.name) in watchedList) {
+        if (watchedList[getWatchedName(item.name)].watched === true) {
+          watched = true;
+        }
+      }
+    }
+
     currFolderCont.push(item);
     if (item.type == 'folder') {
       html += `<div class="dir-item" onclick="guy.emit('render_sidebar', ${currFolderCont.length - 1})">
@@ -135,8 +231,7 @@ async function drawBrowse(path) {
         <button onclick="guy.emit('draw_browse', '${item.path.replace('\\', '/')}')">Open</button>
         <button onclick="self.handle_media('${item.path.replace('\\', '/')}','play-folder')">Play</button>
         <button onclick="self.handle_media('${item.path.replace('\\', '/')}','enqueue-folder')">Enqueue</button>
-        <button onclick="self.dwnld_metadata('${currTab}','${item.path.replace('\\', '/')}')">Get Metadata</button>
-      </div>`;
+        <button onclick="self.dwnld_metadata('${currTab}','${item.path.replace('\\', '/')}')">Get Metadata</button>`;
     } else {
       html += `<div class="dir-item" onclick="guy.emit('render_sidebar', ${currFolderCont.length - 1})">
         ${item.name}`;
@@ -145,8 +240,19 @@ async function drawBrowse(path) {
         html += `<button onclick="self.handle_media('${item.path.replace('\\', '/')}','play-file')">Play</button>
         <button onclick="self.handle_media('${item.path.replace('\\', '/')}','enqueue-file')">Enqueue</button>`;
       }
-      html += `</div>`;
     }
+
+    if (watched) {
+      html += `<button onclick="self.set_watched('${item.path.replaceAll('\\', '/').replaceAll("'", "\\'")}', false)">
+        <i class="fa-regular fa-eye-slash"></i>
+      </button>`;
+    } else {
+      html += `<button onclick="self.set_watched('${item.path.replaceAll('\\', '/').replaceAll("'", "\\'")}')">
+        <i class="fa-regular fa-eye"></i>
+      </button>`;
+    }
+    html += `</div>`;
+
   });
   fileView.innerHTML = html;
 }
